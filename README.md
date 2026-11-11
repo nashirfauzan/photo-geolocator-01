@@ -11,16 +11,17 @@ the agent reads the instance's 25 street-level photos and posts a latitude and l
 2. For each photo, fetch its JPEG and decide a latitude and longitude.
 3. `POST $MAKEFUN_ENV_URL/answers` once, with every answer.
 
-Two ways to place a photo, selected by the pushed secret `GEOLOC_MODE`:
+Two ways to place a photo, selected by the pushed secret `GEOLOC_MODEL`:
 
-| `GEOLOC_MODE` | behaviour |
+| pushed secret | behaviour |
 | --- | --- |
-| `vision` | one model call per photo through the trial's gateway (`GEOLOC_MODEL`, default `claude-haiku-5-5`), the JPEG inline as base64; a photo the model leaves without coordinates is left unanswered |
-| unset | no model call at all: every photo gets `PICTURE_PRIOR`, the point that minimises the mean great-circle distance over the kit's 75 public practice photos |
+| `GEOLOC_MODEL=claude-haiku-5-5` (with the vendor key) | one model call per prompt per photo through the trial's gateway, the JPEG inline as base64; three prompts are merged with a component median, and a photo no answer placed falls back to `PICTURE_PRIOR` |
+| none | no model call at all: every photo gets `PICTURE_PRIOR`, the point that minimises the mean great-circle distance over the kit's 75 public practice photos |
 
 The switch is a pushed secret and never a call's outcome, because the live pass and the replay must
 make the same calls: a call the recording cannot answer stops the replay, which leaves the entry
-unranked.
+unranked. It rides on `GEOLOC_MODEL` rather than a flag of its own because a pushed value shorter
+than eight characters is refused.
 
 ## Determinism
 
